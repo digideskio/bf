@@ -29,13 +29,13 @@ int main(int argc, char *argv[])
 	char* str;
 
 	if (argc != 2) {
-		printf("usage: %s [SOURCE FILE]\n", argv[0]);
-		exit(1);
+		printf("usage: %s SOURCEFILE\n", argv[0]);
+		exit(EXIT_FAILURE);
 	}
 
-	if ((fp = fopen(argv[1], "r")) == 0) {
+	if (!(fp = fopen(argv[1], "r"))) {
 		printf("%s: error: could not open file\n", argv[0]);
-		exit(1);
+		exit(EXIT_FAILURE);
 	}
 
 	ptr = (struct node*) malloc(sizeof(struct node));
@@ -131,5 +131,5 @@ int main(int argc, char *argv[])
 	free(str);
 	fclose(fp);
 
-	return 0;
+	return EXIT_SUCCESS;
 }
