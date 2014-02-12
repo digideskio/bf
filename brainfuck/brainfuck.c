@@ -84,6 +84,8 @@ void interpret(struct node* ptr, char* str, size_t fsize)
 							--parens;
 					} while (parens != 0 && i >= 0);
 				}
+				break;
+			default: ; /* nothing */
 		}
 	}
 }
