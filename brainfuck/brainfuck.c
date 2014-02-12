@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
 	i = 0;
 	while ((c = fgetc(fp)) != EOF) {
 		str[i] = c;
-		i++;
+		++i;
 	}
 	
 	/*
@@ -59,14 +59,14 @@ int main(int argc, char *argv[])
 	 * it does jump around because of the [ and ] instructions. Just think of it like
 	 * the instruction pointer and [ and ] as jmp.
 	 */
-	for (i = 0; i < fsize; i++) {
+	for (i = 0; i < fsize; ++i) {
 		size_t parens;
 		switch(str[i]) {
 			case '+':
-				ptr->c++;
+				++ptr->c;
 				break;
 			case '-':
-				ptr->c--;
+				--ptr->c;
 				break;
 			case '<':
 				if (ptr->prev == 0) {
@@ -96,11 +96,11 @@ int main(int argc, char *argv[])
 				if (ptr->c == 0) {
 					parens = 1;
 					do {
-						i++;
+						++i;
 						if (str[i] == '[')
-							parens++;
+							++parens;
 						if (str[i] == ']')
-							parens--;
+							--parens;
 					} while (parens != 0 && i < fsize);
 				}
 				break;
@@ -108,11 +108,11 @@ int main(int argc, char *argv[])
 				if (ptr->c != 0) {
 					parens = 1;
 					do {
-						i--;
+						--i;
 						if (str[i] == ']')
-							parens++;
+							++parens;
 						if (str[i] == '[')
-							parens--;
+							--parens;
 					} while (parens != 0 && i >= 0);
 				}
 		}
