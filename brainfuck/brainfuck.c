@@ -70,7 +70,7 @@ void interpret(struct node* ptr, char* str, size_t fsize)
 							++parens;
 						if (str[i] == ']')
 							--parens;
-					} while (parens != 0 && i < fsize);
+					} while (parens && i < fsize);
 				}
 				break;
 			case ']':
@@ -82,7 +82,7 @@ void interpret(struct node* ptr, char* str, size_t fsize)
 							++parens;
 						if (str[i] == '[')
 							--parens;
-					} while (parens != 0 && i >= 0);
+					} while (parens);
 				}
 				break;
 			default: ; /* nothing */
@@ -127,10 +127,10 @@ int main(int argc, char *argv[])
 	interpret(ptr, str, fsize);
 
 	/* move to beginning of list to prepare for cleanup */
-	while (ptr->prev != 0)
+	while (ptr->prev)
 		ptr = ptr->prev;
 
-	while (ptr != 0) {
+	while (ptr) {
 		struct node* tmp = ptr->next;
 		free(ptr);
 		ptr = tmp;
