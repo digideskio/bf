@@ -20,45 +20,14 @@ struct node {
 	struct node* next;
 };
 
-int main(int argc, char *argv[])
+void interpret(struct node* ptr, char* str, size_t fsize)
 {
-	struct node* ptr;
-	FILE *fp;
-	size_t fsize, i;
-	char c;
-	char* str;
-
-	if (argc != 2) {
-		printf("usage: %s SOURCEFILE\n", argv[0]);
-		exit(EXIT_FAILURE);
-	}
-
-	if (!(fp = fopen(argv[1], "r"))) {
-		printf("%s: error: could not open file\n", argv[0]);
-		exit(EXIT_FAILURE);
-	}
-
-	ptr = (struct node*) malloc(sizeof(struct node));
-	ptr->c = 0;
-	ptr->prev = 0;
-	ptr->next = 0;
-
-	fseek(fp, 0L, SEEK_END);
-	fsize = ftell(fp);
-	fseek(fp, 0L, SEEK_SET);
-
-	str = (char*) malloc(fsize);
-	i = 0;
-	while ((c = fgetc(fp)) != EOF) {
-		str[i] = c;
-		++i;
-	}
-	
 	/*
 	 * Note that while we move i sequentially through each instruction stored in str,
 	 * it does jump around because of the [ and ] instructions. Just think of it like
 	 * the instruction pointer and [ and ] as jmp.
 	 */
+	size_t i;
 	for (i = 0; i < fsize; ++i) {
 		size_t parens;
 		switch(str[i]) {
@@ -117,6 +86,43 @@ int main(int argc, char *argv[])
 				}
 		}
 	}
+}
+
+int main(int argc, char *argv[])
+{
+	struct node* ptr;
+	FILE *fp;
+	size_t fsize, i;
+	char c;
+	char* str;
+
+	if (argc != 2) {
+		printf("usage: %s SOURCEFILE\n", argv[0]);
+		exit(EXIT_FAILURE);
+	}
+
+	if (!(fp = fopen(argv[1], "r"))) {
+		printf("%s: error: could not open file\n", argv[0]);
+		exit(EXIT_FAILURE);
+	}
+
+	ptr = (struct node*) malloc(sizeof(struct node));
+	ptr->c = 0;
+	ptr->prev = 0;
+	ptr->next = 0;
+
+	fseek(fp, 0L, SEEK_END);
+	fsize = ftell(fp);
+	fseek(fp, 0L, SEEK_SET);
+
+	str = (char*) malloc(fsize);
+	i = 0;
+	while ((c = fgetc(fp)) != EOF) {
+		str[i] = c;
+		++i;
+	}
+
+	interpret(ptr, str, fsize);
 
 	/* move to beginning of list to prepare for cleanup */
 	while (ptr->prev != 0)
