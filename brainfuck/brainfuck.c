@@ -38,7 +38,7 @@ void interpret(struct node* ptr, char* str, size_t fsize)
 				--ptr->c;
 				break;
 			case '<':
-				if (ptr->prev == 0) {
+				if (ptr->prev == NULL) {
 					ptr->prev = (struct node*) malloc(sizeof(struct node));
 					ptr->prev->c = 0;
 					ptr->prev->prev = 0;
@@ -47,7 +47,7 @@ void interpret(struct node* ptr, char* str, size_t fsize)
 				ptr = ptr->prev;
 				break;
 			case '>':
-				if (ptr->next == 0) {
+				if (ptr->next == NULL) {
 					ptr->next = (struct node*) malloc(sizeof(struct node));
 					ptr->next->c = 0;
 					ptr->next->prev = ptr;
