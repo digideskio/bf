@@ -1,5 +1,5 @@
 /*
- * A simple and fast brainfuck interpreter in C.
+ * A simple and (relatively) fast brainfuck interpreter in C.
  * The reason I used a linked list instead of an array is that
  * I can expand the linked list infinitely in either direction
  * without having to destroy and recreate it each time.
@@ -81,6 +81,13 @@ void interpret(struct node *ptr, char *str, size_t fsize)
 				parens = 1;
 				do {
 					--i;
+					/*
+					 * some evil programs
+					 * could cause i to
+					 * underflow here
+					 */
+					if (i > fsize)
+						return;
 					if (str[i] == ']')
 						++parens;
 					if (str[i] == '[')
