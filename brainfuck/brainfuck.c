@@ -1,6 +1,3 @@
-#include <stdio.h>
-#include <stdlib.h>
-
 /*
  * A simple and fast brainfuck interpreter in C.
  * The reason I used a linked list instead of an array is that
@@ -14,101 +11,109 @@
  *    instead of doing a malloc() every time we need a new node
  */
 
+#include <stdio.h>
+#include <stdlib.h>
+
 struct node {
 	char c;
-	struct node* prev;
-	struct node* next;
+	struct node *prev;
+	struct node *next;
 };
 
-void interpret(struct node* ptr, char* str, size_t fsize)
+void interpret(struct node *ptr, char *str, size_t fsize)
 {
 	/*
-	 * Note that while we move i sequentially through each instruction stored in str,
-	 * it does jump around because of the [ and ] instructions. Just think of it like
-	 * the instruction pointer and [ and ] as jmp.
+	 * Note that while we move i sequentially through each
+	 * instruction stored in str, it does jump around because
+	 * of the [ and ] instructions. Just think of it like the
+	 * instruction pointer and [ and ] as jmp.
 	 */
 	size_t i;
 	for (i = 0; i < fsize; ++i) {
 		size_t parens;
-		switch(str[i]) {
-			case '+':
-				++ptr->c;
-				break;
-			case '-':
-				--ptr->c;
-				break;
-			case '<':
-				if (ptr->prev == 0) {
-					ptr->prev = (struct node*) malloc(sizeof(struct node));
-					ptr->prev->c = 0;
-					ptr->prev->prev = 0;
-					ptr->prev->next = ptr;
-				}
-				ptr = ptr->prev;
-				break;
-			case '>':
-				if (ptr->next == 0) {
-					ptr->next = (struct node*) malloc(sizeof(struct node));
-					ptr->next->c = 0;
-					ptr->next->prev = ptr;
-					ptr->next->next = 0;
-				}
-				ptr = ptr->next;
-				break;
-			case '.':
-				putchar(ptr->c);
-				break;
-			case ',':
-				ptr->c = getchar();
-				break;
-			case '[':
-				if (ptr->c == 0) {
-					parens = 1;
-					do {
-						++i;
-						if (str[i] == '[')
-							++parens;
-						if (str[i] == ']')
-							--parens;
-					} while (parens && i < fsize);
-				}
-				break;
-			case ']':
-				if (ptr->c != 0) {
-					parens = 1;
-					do {
-						--i;
-						if (str[i] == ']')
-							++parens;
-						if (str[i] == '[')
-							--parens;
-					} while (parens);
-				}
-				break;
-			default: ; /* nothing */
+		switch (str[i]) {
+		case '+':
+			++ptr->c;
+			break;
+		case '-':
+			--ptr->c;
+			break;
+		case '<':
+			if (ptr->prev == 0) {
+				ptr->prev = (struct node *)
+					malloc(sizeof(struct node));
+				ptr->prev->c = 0;
+				ptr->prev->prev = 0;
+				ptr->prev->next = ptr;
+			}
+			ptr = ptr->prev;
+			break;
+		case '>':
+			if (ptr->next == 0) {
+				ptr->next = (struct node *)
+					malloc(sizeof(struct node));
+				ptr->next->c = 0;
+				ptr->next->prev = ptr;
+				ptr->next->next = 0;
+			}
+			ptr = ptr->next;
+			break;
+		case '.':
+			putchar(ptr->c);
+			break;
+		case ',':
+			ptr->c = getchar();
+			break;
+		case '[':
+			if (ptr->c == 0) {
+				parens = 1;
+				do {
+					++i;
+					if (str[i] == '[')
+						++parens;
+					if (str[i] == ']')
+						--parens;
+				} while (parens && i < fsize);
+			}
+			break;
+		case ']':
+			if (ptr->c != 0) {
+				parens = 1;
+				do {
+					--i;
+					if (str[i] == ']')
+						++parens;
+					if (str[i] == '[')
+						--parens;
+				} while (parens);
+			}
+			break;
+		default:
+			break; /* nothing */
 		}
 	}
 }
 
 int main(int argc, char *argv[])
 {
-	struct node* ptr;
-	FILE* fp;
+	struct node *ptr;
+	FILE *fp;
 	size_t fsize, i;
 	char c;
-	char* str;
+	char *str;
 
 	if (argc != 2) {
 		printf("usage: %s SOURCEFILE\n", argv[0]);
 		return EXIT_FAILURE;
 	}
 
-	if (!(fp = fopen(argv[1], "r"))) {
+	fp = fopen(argv[1], "r");
+	if (fp == 0) {
 		printf("%s: error: could not open file\n", argv[0]);
 		return EXIT_FAILURE;
 	}
 
-	ptr = (struct node*) malloc(sizeof(struct node));
+	ptr = (struct node *) malloc(sizeof(struct node));
 	ptr->c = 0;
 	ptr->prev = 0;
 	ptr->next = 0;
@@ -117,7 +122,7 @@ int main(int argc, char *argv[])
 	fsize = ftell(fp);
 	fseek(fp, 0L, SEEK_SET);
 
-	str = (char*) malloc(fsize);
+	str = (char *) malloc(fsize);
 	i = 0;
 	while ((c = fgetc(fp)) != EOF) {
 		str[i] = c;
@@ -131,11 +136,11 @@ int main(int argc, char *argv[])
 		ptr = ptr->prev;
 
 	while (ptr) {
-		struct node* tmp = ptr->next;
+		struct node *tmp = ptr->next;
 		free(ptr);
 		ptr = tmp;
 	}
-	
+
 	free(str);
 	fclose(fp);
 
