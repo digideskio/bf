@@ -93,7 +93,7 @@ void interpret(struct node* ptr, char* str, size_t fsize)
 int main(int argc, char *argv[])
 {
 	struct node* ptr;
-	FILE *fp;
+	FILE* fp;
 	size_t fsize, i;
 	char c;
 	char* str;
