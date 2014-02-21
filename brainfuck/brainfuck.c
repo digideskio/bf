@@ -99,8 +99,7 @@ int main(int argc, char *argv[])
 	struct node *ptr;
 	FILE *fp;
 	size_t fsize, i;
-	char c;
-	char *str;
+	char c, *str;
 
 	if (argc != 2) {
 		printf("usage: %s SOURCEFILE\n", argv[0]);
