@@ -9,6 +9,8 @@
  *    (as opposed to while running it)
  * 2. Allocate larger blocks of memory and carve nodes out of that
  *    instead of doing a malloc() every time we need a new node
+ *
+ * 2/23/14: Implementing 1. didn't help performance at all.
  */
 
 #include <stdio.h>
@@ -105,8 +107,8 @@ int main(int argc, char *argv[])
 {
 	struct node *ptr;
 	FILE *fp;
-	size_t fsize, i;
-	char c, *str;
+	size_t fsize;
+	char *str;
 
 	if (argc != 2) {
 		printf("usage: %s SOURCEFILE\n", argv[0]);
@@ -129,11 +131,7 @@ int main(int argc, char *argv[])
 	fseek(fp, 0L, SEEK_SET);
 
 	str = (char *) malloc(fsize);
-	i = 0;
-	while ((c = fgetc(fp)) != EOF) {
-		str[i] = c;
-		++i;
-	}
+	fread(str, sizeof(char), fsize, fp);
 
 	interpret(ptr, str, fsize);
 
