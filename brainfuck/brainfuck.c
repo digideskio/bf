@@ -132,7 +132,7 @@ int main(int argc, char *argv[])
 
 	str = (char *) malloc(fsize);
 	if (fread(str, sizeof(char), fsize, fp) != fsize) {
-		printf("%s: error reading file", argv[0]);
+		printf("%s: error reading file\n", argv[0]);
 		return EXIT_FAILURE;
 	}
 
