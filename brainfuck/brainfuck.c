@@ -17,7 +17,7 @@
 #include <stdlib.h>
 
 struct node {
-	char c;
+	unsigned char c;
 	struct node *prev;
 	struct node *next;
 };
@@ -131,7 +131,10 @@ int main(int argc, char *argv[])
 	fseek(fp, 0L, SEEK_SET);
 
 	str = (char *) malloc(fsize);
-	fread(str, sizeof(char), fsize, fp);
+	if (fread(str, sizeof(char), fsize, fp) != fsize) {
+		printf("%s: error reading file", argv[0]);
+		return EXIT_FAILURE;
+	}
 
 	interpret(ptr, str, fsize);
 
