@@ -44,7 +44,7 @@ void interpret(struct node *ptr, char *str, size_t fsize)
 			if (ptr->prev == 0) {
 				ptr->prev = (struct node *)
 					malloc(sizeof(struct node));
-				if (!ptr->prev)
+				if (ptr->prev == 0)
 					return;
 				ptr->prev->c = 0;
 				ptr->prev->prev = 0;
@@ -56,7 +56,7 @@ void interpret(struct node *ptr, char *str, size_t fsize)
 			if (ptr->next == 0) {
 				ptr->next = (struct node *)
 					malloc(sizeof(struct node));
-				if (!ptr->next)
+				if (ptr->next == 0)
 					return;
 				ptr->next->c = 0;
 				ptr->next->prev = ptr;
@@ -143,10 +143,10 @@ int main(int argc, char *argv[])
 	interpret(ptr, str, fsize);
 
 	/* move to beginning of list to prepare for cleanup */
-	while (ptr->prev)
+	while (ptr->prev != 0)
 		ptr = ptr->prev;
 
-	while (ptr) {
+	while (ptr != 0) {
 		struct node *tmp = ptr->next;
 		free(ptr);
 		ptr = tmp;
