@@ -1,5 +1,5 @@
 CC	:= cc
-CFLAGS	:= -Wall -Wextra -pedantic-errors -ansi -march=native
+CFLAGS	:= -Wall -Wextra -pedantic-errors -ansi -Wpedantic
 DFLAGS	:= -g -pg
 INSTALL	:= /usr/local/bin/bf
 DIET	:= /opt/diet/bin/diet
@@ -13,7 +13,7 @@ clean: brainfuck.c
 debug: brainfuck.c
 	$(CC) $(CFLAGS) $(DFLAGS) -o $(OUT) $?
 diet: brainfuck.c
-	$(DIET) $(CC) $(CFLAGS) -O3 -static -o $(OUT) $?
+	$(DIET) $(CC) $(CFLAGS) -Ofast -static -o $(OUT) $?
 	strip $(OUT)
 install: std
 	install $(OUT) $(INSTALL)

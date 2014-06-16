@@ -113,6 +113,7 @@ int main(int argc, char *argv[])
 	FILE *fp;
 	size_t fsize;
 	char *str;
+	int ret = EXIT_SUCCESS;
 
 	if (argc != 2) {
 		printf("usage: %s SOURCEFILE\n", argv[0]);
@@ -137,11 +138,13 @@ int main(int argc, char *argv[])
 	str = (char *) malloc(fsize);
 	if (fread(str, sizeof(char), fsize, fp) != fsize) {
 		printf("%s: error reading file\n", argv[0]);
-		return EXIT_FAILURE;
+		ret = EXIT_FAILURE;
+		goto cleanup;
 	}
 
 	interpret(ptr, str, fsize);
 
+cleanup:
 	/* move to beginning of list to prepare for cleanup */
 	while (ptr->prev != 0)
 		ptr = ptr->prev;
@@ -155,5 +158,5 @@ int main(int argc, char *argv[])
 	free(str);
 	fclose(fp);
 
-	return EXIT_SUCCESS;
+	return ret;
 }
