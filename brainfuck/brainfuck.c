@@ -24,15 +24,16 @@ struct node {
 
 void interpret(struct node *ptr, char *str, size_t fsize)
 {
+	size_t i, bal;
+
 	/*
 	 * Note that while we move i sequentially through each
 	 * instruction stored in str, it does jump around because
 	 * of the [ and ] instructions. Just think of it like the
 	 * instruction pointer and [ and ] as jmp.
 	 */
-	size_t i;
+
 	for (i = 0; i < fsize; ++i) {
-		size_t parens;
 		switch (str[i]) {
 		case '+':
 			++ptr->c;
@@ -72,19 +73,19 @@ void interpret(struct node *ptr, char *str, size_t fsize)
 			break;
 		case '[':
 			if (ptr->c == 0) {
-				parens = 1;
+				bal = 1;
 				do {
 					++i;
 					if (str[i] == '[')
-						++parens;
+						++bal;
 					if (str[i] == ']')
-						--parens;
-				} while (parens && i < fsize);
+						--bal;
+				} while (bal && i < fsize);
 			}
 			break;
 		case ']':
 			if (ptr->c != 0) {
-				parens = 1;
+				bal = 1;
 				do {
 					--i;
 					/*
@@ -95,10 +96,10 @@ void interpret(struct node *ptr, char *str, size_t fsize)
 					if (i > fsize)
 						return;
 					if (str[i] == ']')
-						++parens;
+						++bal;
 					if (str[i] == '[')
-						--parens;
-				} while (parens);
+						--bal;
+				} while (bal);
 			}
 			break;
 		default:
@@ -109,7 +110,7 @@ void interpret(struct node *ptr, char *str, size_t fsize)
 
 int main(int argc, char *argv[])
 {
-	struct node *ptr;
+	struct node *ptr, *tmp;
 	FILE *fp;
 	size_t fsize;
 	char *str;
@@ -150,7 +151,7 @@ cleanup:
 		ptr = ptr->prev;
 
 	while (ptr != 0) {
-		struct node *tmp = ptr->next;
+		tmp = ptr->next;
 		free(ptr);
 		ptr = tmp;
 	}
