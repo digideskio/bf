@@ -121,6 +121,13 @@ int interpret(struct node *ptr, char *str, size_t fsize)
 	return 0;
 }
 
+#define ERROR(msg) \
+	do { \
+		printf("%s: error: %s\n", argv[0], msg); \
+		ret = EXIT_FAILURE; \
+		goto cleanup; \
+	} while (0)
+
 int main(int argc, char *argv[])
 {
 	struct node *ptr, *tmp;
@@ -141,43 +148,27 @@ int main(int argc, char *argv[])
 	}
 
 	ptr = (struct node *) malloc(sizeof(struct node));
-	if (ptr == NULL) {
-		printf("%s: error: bad memory allocation\n", argv[0]);
-		ret = EXIT_FAILURE;
-		goto cleanup;
-	}
+	if (ptr == NULL)
+		ERROR("bad memory allocation");
 
 	ptr->c = 0;
 	ptr->prev = NULL;
 	ptr->next = NULL;
 
-	if (fseek(fp, 0L, SEEK_END)) {
-		printf("%s: error reading file\n", argv[0]);
-		ret = EXIT_FAILURE;
-		goto cleanup;
-	}
+	if (fseek(fp, 0L, SEEK_END))
+		ERROR("cannot read file");
 
 	fsize = ftell(fp);
 
-	if (fseek(fp, 0L, SEEK_SET)) {
-		printf("%s: error reading file\n", argv[0]);
-		ret = EXIT_FAILURE;
-		goto cleanup;
-	}
+	if (fseek(fp, 0L, SEEK_SET))
+		ERROR("cannot read file");
 
 	str = (char *) malloc(fsize);
+	if (str == NULL)
+		ERROR("bad memory allocation");
 
-	if (str == NULL) {
-		printf("%s: error: bad memory allocation\n", argv[0]);
-		ret = EXIT_FAILURE;
-		goto cleanup;
-	}
-
-	if (fread(str, sizeof(char), fsize, fp) != fsize) {
-		printf("%s: error reading file\n", argv[0]);
-		ret = EXIT_FAILURE;
-		goto cleanup;
-	}
+	if (fread(str, sizeof(char), fsize, fp) != fsize)
+		ERROR("cannot read file");
 
 	status = interpret(ptr, str, fsize);
 
