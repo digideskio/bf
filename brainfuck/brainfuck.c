@@ -22,9 +22,16 @@ struct node {
 	struct node *next;
 };
 
-void interpret(struct node *ptr, char *str, size_t fsize)
+/*
+ * Interprets and runs brainfuck code.
+ * All characters that are not brainfuck commands are ignored.
+ *
+ * args: pointer to first node, string to be interpreted, size of string
+ * returns: 0 on success, 1 for invalid program, 2 for bad memory allocation
+ */
+int interpret(struct node *ptr, char *str, size_t fsize)
 {
-	size_t i, bal;
+	size_t i, bal = 0;
 
 	/*
 	 * Note that while we move i sequentially through each
@@ -45,10 +52,10 @@ void interpret(struct node *ptr, char *str, size_t fsize)
 			if (ptr->prev == 0) {
 				ptr->prev = (struct node *)
 					malloc(sizeof(struct node));
-				if (ptr->prev == 0)
-					return;
+				if (ptr->prev == NULL)
+					return 2;
 				ptr->prev->c = 0;
-				ptr->prev->prev = 0;
+				ptr->prev->prev = NULL;
 				ptr->prev->next = ptr;
 			}
 			ptr = ptr->prev;
@@ -57,11 +64,11 @@ void interpret(struct node *ptr, char *str, size_t fsize)
 			if (ptr->next == 0) {
 				ptr->next = (struct node *)
 					malloc(sizeof(struct node));
-				if (ptr->next == 0)
-					return;
+				if (ptr->next == NULL)
+					return 2;
 				ptr->next->c = 0;
 				ptr->next->prev = ptr;
-				ptr->next->next = 0;
+				ptr->next->next = NULL;
 			}
 			ptr = ptr->next;
 			break;
@@ -94,7 +101,7 @@ void interpret(struct node *ptr, char *str, size_t fsize)
 					 * underflow here
 					 */
 					if (i > fsize)
-						return;
+						return 1;
 					if (str[i] == ']')
 						++bal;
 					if (str[i] == '[')
@@ -106,6 +113,12 @@ void interpret(struct node *ptr, char *str, size_t fsize)
 			break; /* nothing */
 		}
 	}
+
+	/* The program is invalid if all brackets don't match at the end */
+	if (bal)
+		return 1;
+
+	return 0;
 }
 
 int main(int argc, char *argv[])
@@ -113,8 +126,8 @@ int main(int argc, char *argv[])
 	struct node *ptr, *tmp;
 	FILE *fp;
 	size_t fsize;
-	char *str;
-	int ret = EXIT_SUCCESS;
+	char *str = NULL;
+	int status, ret = EXIT_SUCCESS;
 
 	if (argc != 2) {
 		printf("usage: %s SOURCEFILE\n", argv[0]);
@@ -122,35 +135,66 @@ int main(int argc, char *argv[])
 	}
 
 	fp = fopen(argv[1], "r");
-	if (fp == 0) {
+	if (fp == NULL) {
 		printf("%s: error: could not open file\n", argv[0]);
 		return EXIT_FAILURE;
 	}
 
 	ptr = (struct node *) malloc(sizeof(struct node));
-	ptr->c = 0;
-	ptr->prev = 0;
-	ptr->next = 0;
+	if (ptr == NULL) {
+		printf("%s: error: bad memory allocation\n", argv[0]);
+		ret = EXIT_FAILURE;
+		goto cleanup;
+	}
 
-	fseek(fp, 0L, SEEK_END);
+	ptr->c = 0;
+	ptr->prev = NULL;
+	ptr->next = NULL;
+
+	if (fseek(fp, 0L, SEEK_END)) {
+		printf("%s: error reading file\n", argv[0]);
+		ret = EXIT_FAILURE;
+		goto cleanup;
+	}
+
 	fsize = ftell(fp);
-	fseek(fp, 0L, SEEK_SET);
+
+	if (fseek(fp, 0L, SEEK_SET)) {
+		printf("%s: error reading file\n", argv[0]);
+		ret = EXIT_FAILURE;
+		goto cleanup;
+	}
 
 	str = (char *) malloc(fsize);
+
+	if (str == NULL) {
+		printf("%s: error: bad memory allocation\n", argv[0]);
+		ret = EXIT_FAILURE;
+		goto cleanup;
+	}
+
 	if (fread(str, sizeof(char), fsize, fp) != fsize) {
 		printf("%s: error reading file\n", argv[0]);
 		ret = EXIT_FAILURE;
 		goto cleanup;
 	}
 
-	interpret(ptr, str, fsize);
+	status = interpret(ptr, str, fsize);
+
+	if (status == 1) {
+		printf("%s: error: unmatched brackets\n", argv[0]);
+		ret = EXIT_FAILURE;
+	} else if (status == 2) {
+		printf("%s: error: bad memory allocation\n", argv[0]);
+		ret = EXIT_FAILURE;
+	}
 
 cleanup:
 	/* move to beginning of list to prepare for cleanup */
-	while (ptr->prev != 0)
+	while (ptr->prev)
 		ptr = ptr->prev;
 
-	while (ptr != 0) {
+	while (ptr) {
 		tmp = ptr->next;
 		free(ptr);
 		ptr = tmp;

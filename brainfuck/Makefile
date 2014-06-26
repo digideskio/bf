@@ -1,5 +1,5 @@
 CC	:= cc
-CFLAGS	:= -Wall -Wextra -pedantic-errors -ansi -Wpedantic
+CFLAGS	:= -Wall -Wextra -pedantic-errors -ansi
 DFLAGS	:= -g -pg
 INSTALL	:= /usr/local/bin/bf
 DIET	:= /opt/diet/bin/diet
