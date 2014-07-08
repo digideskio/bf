@@ -2,19 +2,17 @@
  * A simple and (relatively) fast brainfuck interpreter in C.
  * The reason I used a linked list instead of an array is that
  * I can expand the linked list infinitely in either direction
- * without having to destroy and recreate it each time.
- *
- * TODO:
- * 1. Make it ignore non-code characters when it loads the program
- *    (as opposed to while running it)
- * 2. Allocate larger blocks of memory and carve nodes out of that
- *    instead of doing a malloc() every time we need a new node
- *
- * 2/23/14: Implementing 1. didn't help performance at all.
+ * without having to destroy and recreate it each time. Based
+ * on my tests, however, this seems to be somewhat less
+ * performant than array-based implementations, likely because
+ * it's not very cache-friendly.
  */
 
 #include <stdio.h>
 #include <stdlib.h>
+
+/* this would be in stdint.h, but that was introduced in C99 */
+#define SIZE_MAX ((size_t) -1)
 
 struct node {
 	unsigned char c;
@@ -29,15 +27,20 @@ struct node {
  * args: pointer to first node, string to be interpreted, size of string
  * returns: 0 on success, 1 for invalid program, 2 for bad memory allocation
  */
-int interpret(struct node *ptr, char *str, size_t fsize)
+static int interpret(struct node *ptr, char *str, size_t fsize)
 {
-	size_t i, bal = 0;
+	size_t i;
+	long bal = 0;
 
 	/*
 	 * Note that while we move i sequentially through each
 	 * instruction stored in str, it does jump around because
 	 * of the [ and ] instructions. Just think of it like the
 	 * instruction pointer and [ and ] as jmp.
+	 *
+	 * Also note that str isn't technically a C string since
+	 * it isn't null-terminated, but that's OK because we
+	 * know its size.
 	 */
 
 	for (i = 0; i < fsize; ++i) {
@@ -87,7 +90,7 @@ int interpret(struct node *ptr, char *str, size_t fsize)
 						++bal;
 					if (str[i] == ']')
 						--bal;
-				} while (bal && i < fsize);
+				} while (bal && i < fsize - 1);
 			}
 			break;
 		case ']':
@@ -100,7 +103,7 @@ int interpret(struct node *ptr, char *str, size_t fsize)
 					 * could cause i to
 					 * underflow here
 					 */
-					if (i > fsize)
+					if (i >= fsize)
 						return 1;
 					if (str[i] == ']')
 						++bal;
@@ -114,11 +117,8 @@ int interpret(struct node *ptr, char *str, size_t fsize)
 		}
 	}
 
-	/* The program is invalid if all brackets don't match at the end */
-	if (bal)
-		return 1;
-
-	return 0;
+	/* the program is invalid if all brackets don't match at the end */
+	return bal ? 1 : 0;
 }
 
 #define ERROR(msg) \
@@ -132,9 +132,21 @@ int main(int argc, char *argv[])
 {
 	struct node *ptr, *tmp;
 	FILE *fp;
-	size_t fsize;
+	long fsize;
 	char *str = NULL;
 	int status, ret = EXIT_SUCCESS;
+
+	/*
+	 * These first few error checks don't use the
+	 * macro because there's nothing to clean up,
+	 * and calling fclose() on an uninitialized
+	 * file pointer is a no-no.
+	 */
+
+	if (setvbuf(stdout, NULL, _IONBF, 0)) {
+		printf("%s: error: could not unbuffer stdout\n", argv[0]);
+		return EXIT_FAILURE;
+	}
 
 	if (argc != 2) {
 		printf("usage: %s SOURCEFILE\n", argv[0]);
@@ -159,26 +171,28 @@ int main(int argc, char *argv[])
 		ERROR("cannot read file");
 
 	fsize = ftell(fp);
+	if (fsize == -1)
+		ERROR("cannot read file");
 
 	if (fseek(fp, 0L, SEEK_SET))
 		ERROR("cannot read file");
+
+	if ((unsigned long) fsize > SIZE_MAX)
+		ERROR("file too large");
 
 	str = (char *) malloc(fsize);
 	if (str == NULL)
 		ERROR("bad memory allocation");
 
-	if (fread(str, sizeof(char), fsize, fp) != fsize)
+	if (fread(str, sizeof(char), fsize, fp) != (size_t) fsize)
 		ERROR("cannot read file");
 
 	status = interpret(ptr, str, fsize);
 
-	if (status == 1) {
-		printf("%s: error: unmatched brackets\n", argv[0]);
-		ret = EXIT_FAILURE;
-	} else if (status == 2) {
-		printf("%s: error: bad memory allocation\n", argv[0]);
-		ret = EXIT_FAILURE;
-	}
+	if (status == 1)
+		ERROR("unmatched brackets");
+	else if (status == 2)
+		ERROR("bad memory allocation");
 
 cleanup:
 	/* move to beginning of list to prepare for cleanup */

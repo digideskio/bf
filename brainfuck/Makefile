@@ -1,6 +1,6 @@
 CC	:= cc
 CFLAGS	:= -Wall -Wextra -pedantic-errors -ansi
-DFLAGS	:= -g -pg
+DFLAGS	:= -g -pg -O0
 INSTALL	:= /usr/local/bin/bf
 DIET	:= /opt/diet/bin/diet
 OUT	:= bf
