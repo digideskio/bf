@@ -9,3 +9,5 @@ without having to destroy and recreate it each time. Based
 on my tests, however, this seems to be somewhat less
 performant than array-based implementations, likely because
 it's not very cache-friendly.
+
+It should work on anything that supports ANSI C.
