@@ -11,7 +11,14 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-/* this would be in stdint.h, but that was introduced in C99 */
+/*
+ * This would be in stdint.h, but that was introduced in C99,
+ * so we're going to define it outselves just to be safe.
+ */
+#ifdef SIZE_MAX
+#undef SIZE_MAX
+#endif
+
 #define SIZE_MAX ((size_t) -1)
 
 struct node {
