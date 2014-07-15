@@ -23,6 +23,5 @@
 *.hex
 
 # My stuff
-brainfuck/progs
-brainfuck/bf
-brainfuck/checkpatch
+progs
+bf
