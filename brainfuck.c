@@ -192,7 +192,7 @@ int main(int argc, char *argv[])
 	if (str == NULL)
 		ERROR("bad memory allocation");
 
-	if (fread(str, sizeof(char), fsize, fp) != (size_t) fsize)
+	if (fread(str, 1, fsize, fp) != (size_t) fsize)
 		ERROR("cannot read file");
 
 	status = interpret(ptr, str, fsize);
