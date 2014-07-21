@@ -60,7 +60,7 @@ static int interpret(struct node *ptr, char *str, size_t fsize)
 			--ptr->c;
 			break;
 		case '<':
-			if (ptr->prev == 0) {
+			if (!ptr->prev) {
 				/*
 				 * Before you laugh at me for casting
 				 * malloc(), I'm doing it because I
@@ -78,7 +78,7 @@ static int interpret(struct node *ptr, char *str, size_t fsize)
 			ptr = ptr->prev;
 			break;
 		case '>':
-			if (ptr->next == 0) {
+			if (!ptr->next) {
 				ptr->next = (struct node *)
 					malloc(sizeof(struct node));
 				if (ptr->next == NULL)
@@ -96,7 +96,7 @@ static int interpret(struct node *ptr, char *str, size_t fsize)
 			ptr->c = getchar();
 			break;
 		case '[':
-			if (ptr->c == 0) {
+			if (!ptr->c) {
 				bal = 1;
 				do {
 					++i;
