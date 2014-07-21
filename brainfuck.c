@@ -61,6 +61,12 @@ static int interpret(struct node *ptr, char *str, size_t fsize)
 			break;
 		case '<':
 			if (ptr->prev == 0) {
+				/*
+				 * Before you laugh at me for casting
+				 * malloc(), I'm doing it because I
+				 * want this program to be both valid
+				 * C and C++.
+				 */
 				ptr->prev = (struct node *)
 					malloc(sizeof(struct node));
 				if (ptr->prev == NULL)
