@@ -28,14 +28,17 @@ struct node {
 	struct node *next;
 };
 
+typedef enum { INT_SUCC, INT_INVL, INT_MEMERR, INT_IOERR } INT_STAT;
+
 /*
  * Interprets and runs brainfuck code.
  * All characters that are not brainfuck commands are ignored.
  *
  * args: pointer to first node, string to be interpreted, size of string
- * returns: 0 on success, 1 for invalid program, 2 for bad memory allocation
+ * returns: 0 for success, 1 for invalid program,
+ *          2 for bad memory allocation, 3 for I/O error
  */
-static int interpret(struct node *ptr, char *str, size_t fsize)
+static INT_STAT interpret(struct node *ptr, char *str, size_t fsize)
 {
 	size_t i;
 	long bal = 0;
@@ -69,8 +72,8 @@ static int interpret(struct node *ptr, char *str, size_t fsize)
 				 */
 				ptr->prev = (struct node *)
 					malloc(sizeof(struct node));
-				if (ptr->prev == NULL)
-					return 2;
+				if (!ptr->prev)
+					return INT_MEMERR;
 				ptr->prev->c = 0;
 				ptr->prev->prev = NULL;
 				ptr->prev->next = ptr;
@@ -81,8 +84,8 @@ static int interpret(struct node *ptr, char *str, size_t fsize)
 			if (!ptr->next) {
 				ptr->next = (struct node *)
 					malloc(sizeof(struct node));
-				if (ptr->next == NULL)
-					return 2;
+				if (!ptr->next)
+					return INT_MEMERR;
 				ptr->next->c = 0;
 				ptr->next->prev = ptr;
 				ptr->next->next = NULL;
@@ -90,7 +93,8 @@ static int interpret(struct node *ptr, char *str, size_t fsize)
 			ptr = ptr->next;
 			break;
 		case '.':
-			putchar(ptr->c);
+			if (putchar(ptr->c) == EOF)
+				return INT_IOERR;
 			break;
 		case ',':
 			ptr->c = getchar();
@@ -108,7 +112,7 @@ static int interpret(struct node *ptr, char *str, size_t fsize)
 			}
 			break;
 		case ']':
-			if (ptr->c != 0) {
+			if (ptr->c) {
 				bal = 1;
 				do {
 					--i;
@@ -118,7 +122,7 @@ static int interpret(struct node *ptr, char *str, size_t fsize)
 					 * underflow here
 					 */
 					if (i >= fsize)
-						return 1;
+						return INT_INVL;
 					if (str[i] == ']')
 						++bal;
 					if (str[i] == '[')
@@ -132,7 +136,7 @@ static int interpret(struct node *ptr, char *str, size_t fsize)
 	}
 
 	/* the program is invalid if all brackets don't match at the end */
-	return bal ? 1 : 0;
+	return bal ? INT_INVL : INT_SUCC;
 }
 
 #define ERROR(msg) \
@@ -168,13 +172,13 @@ int main(int argc, char *argv[])
 	}
 
 	fp = fopen(argv[1], "r");
-	if (fp == NULL) {
+	if (!fp) {
 		printf("%s: error: could not open file\n", argv[0]);
 		return EXIT_FAILURE;
 	}
 
 	ptr = (struct node *) malloc(sizeof(struct node));
-	if (ptr == NULL)
+	if (!ptr)
 		ERROR("bad memory allocation");
 
 	ptr->c = 0;
@@ -195,7 +199,7 @@ int main(int argc, char *argv[])
 		ERROR("file too large");
 
 	str = (char *) malloc(fsize);
-	if (str == NULL)
+	if (!str)
 		ERROR("bad memory allocation");
 
 	if (fread(str, 1, fsize, fp) != (size_t) fsize)
