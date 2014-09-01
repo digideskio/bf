@@ -152,7 +152,8 @@ int main(int argc, char *argv[])
 	FILE *fp;
 	long fsize;
 	char *str = NULL;
-	int status, ret = EXIT_SUCCESS;
+	INT_STAT status;
+	int ret = EXIT_SUCCESS;
 
 	/*
 	 * These first few error checks don't use the
@@ -207,10 +208,12 @@ int main(int argc, char *argv[])
 
 	status = interpret(ptr, str, fsize);
 
-	if (status == 1)
+	if (status == INT_INVL)
 		ERROR("unmatched brackets");
-	else if (status == 2)
+	else if (status == INT_MEMERR)
 		ERROR("bad memory allocation");
+	else if (status == INT_IOERR)
+		ERROR("input/output error");
 
 cleanup:
 	/* move to beginning of list to prepare for cleanup */
