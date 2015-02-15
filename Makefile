@@ -5,17 +5,17 @@ DFLAGS	:= -g -pg -O0
 INSTALL	:= /usr/local/bin/bf
 OUT	:= bf
 
-all:	std
+all:	bf
 
-std:	$(SRC)
+bf:	$(SRC)
 	$(CC) $(CFLAGS) -O3 -o $(OUT) $?
 
-clean:	$(SRC)
+clean:
 	rm -f $(OUT) gmon.out
 
 debug:	$(SRC)
 	$(CC) $(CFLAGS) $(DFLAGS) -o $(OUT) $?
 
-install: std
+install: bf
 	install $(OUT) $(INSTALL)
 	strip $(INSTALL)
